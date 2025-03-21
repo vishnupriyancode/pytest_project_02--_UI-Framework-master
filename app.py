@@ -18,41 +18,47 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app
 app = Flask(__name__)
 
-# Configure CORS to allow requests from all origins with all methods and headers
+# Configure CORS
 CORS(app, 
-     resources={r"/*": {
-         "origins": ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "*"],
-         "methods": ["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
-         "allow_headers": ["Content-Type", "Authorization", "Accept", "X-Requested-With", "Cache-Control"],
-         "expose_headers": ["Content-Type", "Authorization"],
-         "supports_credentials": True,
-         "max_age": 3600  # Cache preflight response for 1 hour
-     }},
-     send_wildcard=True)
-
-# Additional CORS headers as a fallback
-@app.after_request
-def add_cors_headers(response):
-    """Add CORS headers to all responses"""
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With,Cache-Control')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS,PUT,DELETE,PATCH')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
+     resources={
+         r"/*": {
+             "origins": ["http://localhost:3002"],
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+             "supports_credentials": True
+         }
+     })
 
 # Health check endpoint
-@app.route('/test-connection', methods=['GET', 'OPTIONS'])
-def test_connection():
-    """Health check endpoint"""
-    # Handle preflight OPTIONS request
+@app.route('/health-check', methods=['GET', 'OPTIONS'])
+def health_check():
+    """Simple endpoint to check if the API is running"""
     if request.method == 'OPTIONS':
         return '', 204
-        
     return jsonify({
-        'status': 'success',
-        'message': 'API connection successful',
-        'timestamp': datetime.now().isoformat()
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat()
     })
+
+# Process all JSONs endpoint
+@app.route('/process-all-jsons', methods=['GET', 'OPTIONS'])
+def process_all_jsons():
+    """Process all JSON files"""
+    if request.method == 'OPTIONS':
+        return '', 204
+    try:
+        # Your processing logic here
+        return jsonify({
+            "status": "success",
+            "message": "Processing complete"
+        })
+    except Exception as e:
+        logger.error(f"Error processing JSONs: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 # Process Edit endpoint
 @app.route('/process-edit', methods=['POST', 'OPTIONS'])
@@ -428,4 +434,4 @@ def process_all_files():
 
 if __name__ == '__main__':
     logger.info("Starting JSON Processing API")
-    app.run(host=API_HOST, port=API_PORT, debug=True) 
+    app.run(host='0.0.0.0', port=5000, debug=True) 

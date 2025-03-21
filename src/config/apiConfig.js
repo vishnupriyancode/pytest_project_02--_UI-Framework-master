@@ -8,62 +8,44 @@
 // Detect environment and set base URL accordingly
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
-  const port = window.location.port;
   
   // Production environment
   if (hostname === 'your-production-domain.com') {
     return 'https://api.your-production-domain.com';
   }
   
-  // Staging environment
-  if (hostname === 'staging.your-domain.com') {
-    return 'https://api-staging.your-domain.com';
-  }
-  
-  // Development environments - important: use the correct port from the error logs
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // For local development, API server should always be on localhost:5000
-    return 'http://localhost:5000';
-  }
-  
-  // Default fallback (development)
+  // Development environment - use port 5000 for API server
   return 'http://localhost:5000';
 };
 
 // API health check configuration
 const HEALTH_CHECK_CONFIG = {
-  // Endpoint for checking API health
   ENDPOINT: '/health-check',
-  // Timeout for health check (milliseconds)
-  TIMEOUT: 5000,
-  // Interval for automatic health checks (milliseconds)
-  CHECK_INTERVAL: 60000, // 1 minute
-  // Number of retry attempts for health check
-  RETRY_ATTEMPTS: 2
+  TIMEOUT: 30000, // Increased timeout to 30 seconds
+  CHECK_INTERVAL: 30000, // Check every 30 seconds
+  RETRY_ATTEMPTS: 3,
+  RETRY_DELAY: 5000 // 5 seconds between retries
 };
 
 // Configuration object
 const API_CONFIG = {
   BASE_URL: getApiBaseUrl(),
-  TIMEOUT: 30000, // Default timeout for requests (30 seconds)
-  RETRY_ATTEMPTS: 3, // Number of retry attempts for failed requests
+  TIMEOUT: 30000,
+  RETRY_ATTEMPTS: 3,
   HEALTH_CHECK: HEALTH_CHECK_CONFIG,
   
   // Request headers
   HEADERS: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    // Add these headers to help with CORS issues
-    'X-Requested-With': 'XMLHttpRequest',
-    'Cache-Control': 'no-cache'
+    'X-Requested-With': 'XMLHttpRequest'
   },
   
-  // CORS configuration - updated with more flexible settings
+  // CORS configuration
   CORS: {
-    credentials: 'same-origin', // Changed from 'include' to avoid CORS issues
+    credentials: 'include',
     mode: 'cors',
-    cache: 'no-cache',
-    redirect: 'follow'
+    cache: 'default'
   },
   
   // Endpoints

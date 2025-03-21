@@ -5,19 +5,50 @@ import API_CONFIG, { testApiConnection } from '../config/apiConfig';
 // Use the API configuration 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
-// Create an axios instance with default configuration
+// Create axios instance with retry functionality
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
   headers: API_CONFIG.HEADERS,
-  // Add CORS settings
-  withCredentials: API_CONFIG.CORS.credentials === 'include',
+  withCredentials: true
 });
 
-// Add response interceptor for better error handling
+// Add request interceptor for retries
+apiClient.interceptors.request.use(
+  config => {
+    // Add retry count to config if not present
+    if (!config.retryCount) {
+      config.retryCount = 0;
+    }
+    return config;
+  },
+  error => Promise.reject(error)
+);
+
+// Add response interceptor for better error handling and retries
 apiClient.interceptors.response.use(
   response => response,
-  error => {
+  async error => {
+    const config = error.config;
+    
+    // If we haven't reached max retries and the error is retryable
+    if (
+      config.retryCount < API_CONFIG.RETRY_ATTEMPTS && 
+      (error.code === 'ECONNABORTED' || 
+       error.response?.status >= 500 ||
+       !error.response)
+    ) {
+      config.retryCount += 1;
+      
+      // Wait before retrying (exponential backoff)
+      const delay = Math.min(1000 * (Math.pow(2, config.retryCount) - 1), 10000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      console.log(`Retrying request (${config.retryCount}/${API_CONFIG.RETRY_ATTEMPTS})`);
+      return apiClient(config);
+    }
+    
+    // Log the error details
     if (error.code === 'ECONNABORTED') {
       console.error('Request timeout:', error);
     } else if (error.response) {
@@ -27,9 +58,53 @@ apiClient.interceptors.response.use(
     } else {
       console.error('Error:', error.message);
     }
+    
     return Promise.reject(error);
   }
 );
+
+// Export the configured client
+export default apiClient;
+
+// Health check function
+export const checkApiHealth = async () => {
+  try {
+    const response = await apiClient.get(API_CONFIG.HEALTH_CHECK.ENDPOINT, {
+      timeout: API_CONFIG.HEALTH_CHECK.TIMEOUT
+    });
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error.message,
+      isTimeout: error.code === 'ECONNABORTED'
+    };
+  }
+};
+
+// Start periodic health checks
+let healthCheckInterval;
+
+export const startHealthChecks = () => {
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval);
+  }
+  
+  healthCheckInterval = setInterval(async () => {
+    const result = await checkApiHealth();
+    if (!result.success) {
+      console.warn('API health check failed:', result.error);
+    }
+  }, API_CONFIG.HEALTH_CHECK.CHECK_INTERVAL);
+};
+
+// Stop health checks
+export const stopHealthChecks = () => {
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval);
+    healthCheckInterval = null;
+  }
+};
 
 // Process all JSON files on startup
 export const processAllJsons = async () => {

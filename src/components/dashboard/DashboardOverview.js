@@ -4,6 +4,7 @@ import TimelineChart from './TimelineChart';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { UI_COLORS } from '../../theme/colorScheme';
+import { startHealthChecks, stopHealthChecks } from '../../services/apiService';
 
 const DashboardOverview = () => {
   const [statusData, setStatusData] = useState({
@@ -127,6 +128,17 @@ const DashboardOverview = () => {
       changeType: 'positive'
     }
   ];
+  
+  // Initialize health checks
+  useEffect(() => {
+    // Start health checks when component mounts
+    startHealthChecks();
+    
+    // Cleanup function to stop health checks when component unmounts
+    return () => {
+      stopHealthChecks();
+    };
+  }, []); // Empty dependency array means this runs once on mount
   
   return (
     <div className="space-y-6">
