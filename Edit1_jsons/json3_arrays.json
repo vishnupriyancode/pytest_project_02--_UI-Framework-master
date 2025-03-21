@@ -1,0 +1,38 @@
+{
+  "id": "arrays-003",
+  "name": "Array of Objects Test",
+  "description": "Tests processing arrays of objects",
+  "timestamp": "2023-06-15T10:30:00Z",
+  "items": [
+    {
+      "id": 1,
+      "name": "Item One",
+      "price": 10.99,
+      "in_stock": true
+    },
+    {
+      "id": 2,
+      "name": "Item Two",
+      "price": 24.50,
+      "in_stock": false
+    },
+    {
+      "id": 3,
+      "name": "Item Three",
+      "price": 5.75,
+      "in_stock": true
+    }
+  ],
+  "users": [
+    {
+      "id": 101,
+      "username": "user1",
+      "roles": ["admin", "editor"]
+    },
+    {
+      "id": 102,
+      "username": "user2",
+      "roles": ["viewer"]
+    }
+  ]
+} 

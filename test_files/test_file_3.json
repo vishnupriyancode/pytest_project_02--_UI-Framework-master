@@ -1,0 +1,12 @@
+{
+  "id": "test3",
+  "name": "Test JSON 3",
+  "description": "This is test file 3 for bulk upload testing",
+  "timestamp": "2025-03-08T14:30:00Z",
+  "data": {
+    "key1": "value3",
+    "key2": "value32",
+    "numericValue": 300,
+    "booleanValue": false
+  }
+}

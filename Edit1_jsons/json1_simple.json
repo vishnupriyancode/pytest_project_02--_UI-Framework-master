@@ -1,0 +1,9 @@
+{
+  "id": "simple-001",
+  "name": "Simple Test JSON",
+  "type": "validation",
+  "active": true,
+  "priority": 1,
+  "created_date": "2023-06-15",
+  "tags": ["test", "simple", "flat"]
+} 

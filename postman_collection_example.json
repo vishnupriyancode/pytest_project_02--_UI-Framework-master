@@ -1,0 +1,252 @@
+{
+  "info": {
+    "_postman_id": "12345678-1234-1234-1234-123456789abc",
+    "name": "JSON Edit Processing API",
+    "description": "Collection for testing the JSON Edit Processing API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Process Edit from Single JSON File",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"file_path\": \"C:\\\\path\\\\to\\\\your\\\\sample.json\",\n    \"edit_id\": \"Edit 1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/process-edit",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "process-edit"
+          ]
+        },
+        "description": "Process a JSON edit from a single local file path"
+      },
+      "response": [
+        {
+          "name": "Successful Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"file_path\": \"C:\\\\path\\\\to\\\\your\\\\sample.json\",\n    \"edit_id\": \"Edit 1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/process-edit",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "process-edit"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n    \"status\": \"success\",\n    \"message\": \"Edit is working properly\",\n    \"edit_id\": \"Edit 1\",\n    \"processed\": true\n}",
+          "cookie": [],
+          "_postman_previewlanguage": "json"
+        },
+        {
+          "name": "Error - File Not Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"file_path\": \"C:\\\\path\\\\to\\\\nonexistent\\\\file.json\",\n    \"edit_id\": \"Edit 1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/process-edit",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "process-edit"
+              ]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n    \"status\": \"error\",\n    \"message\": \"File not found at path: C:\\\\path\\\\to\\\\nonexistent\\\\file.json\"\n}",
+          "cookie": [],
+          "_postman_previewlanguage": "json"
+        }
+      ]
+    },
+    {
+      "name": "Process Edit from Multiple JSON Files",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"file_paths\": [\n        \"C:\\\\path\\\\to\\\\your\\\\sample1.json\",\n        \"C:\\\\path\\\\to\\\\your\\\\sample2.json\",\n        \"C:\\\\path\\\\to\\\\your\\\\sample3.json\"\n    ],\n    \"edit_id\": \"Bulk_Edit\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/process-edit",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "process-edit"
+          ]
+        },
+        "description": "Process a JSON edit from multiple local file paths"
+      },
+      "response": [
+        {
+          "name": "Successful Multi-File Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"file_paths\": [\n        \"C:\\\\path\\\\to\\\\your\\\\sample1.json\",\n        \"C:\\\\path\\\\to\\\\your\\\\sample2.json\",\n        \"C:\\\\path\\\\to\\\\your\\\\sample3.json\"\n    ],\n    \"edit_id\": \"Bulk_Edit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/process-edit",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "process-edit"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n    \"status\": \"success\",\n    \"message\": \"Edit processing completed\",\n    \"summary\": {\n        \"total\": 3,\n        \"success\": 3,\n        \"error\": 0\n    },\n    \"edit_id\": \"Bulk_Edit\",\n    \"results\": [\n        {\n            \"file_path\": \"C:\\\\path\\\\to\\\\your\\\\sample1.json\",\n            \"status\": \"success\",\n            \"edit_id\": \"Bulk_Edit_1\"\n        },\n        {\n            \"file_path\": \"C:\\\\path\\\\to\\\\your\\\\sample2.json\",\n            \"status\": \"success\",\n            \"edit_id\": \"Bulk_Edit_2\"\n        },\n        {\n            \"file_path\": \"C:\\\\path\\\\to\\\\your\\\\sample3.json\",\n            \"status\": \"success\",\n            \"edit_id\": \"Bulk_Edit_3\"\n        }\n    ],\n    \"processed\": true\n}",
+          "cookie": [],
+          "_postman_previewlanguage": "json"
+        },
+        {
+          "name": "Partial Success Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"file_paths\": [\n        \"C:\\\\path\\\\to\\\\your\\\\sample1.json\",\n        \"C:\\\\path\\\\to\\\\nonexistent\\\\file.json\",\n        \"C:\\\\path\\\\to\\\\your\\\\sample3.json\"\n    ],\n    \"edit_id\": \"Bulk_Edit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/process-edit",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "process-edit"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n    \"status\": \"partial\",\n    \"message\": \"Edit processing completed\",\n    \"summary\": {\n        \"total\": 3,\n        \"success\": 2,\n        \"error\": 1\n    },\n    \"edit_id\": \"Bulk_Edit\",\n    \"results\": [\n        {\n            \"file_path\": \"C:\\\\path\\\\to\\\\your\\\\sample1.json\",\n            \"status\": \"success\",\n            \"edit_id\": \"Bulk_Edit_1\"\n        },\n        {\n            \"file_path\": \"C:\\\\path\\\\to\\\\nonexistent\\\\file.json\",\n            \"status\": \"error\",\n            \"message\": \"File not found at path: C:\\\\path\\\\to\\\\nonexistent\\\\file.json\"\n        },\n        {\n            \"file_path\": \"C:\\\\path\\\\to\\\\your\\\\sample3.json\",\n            \"status\": \"success\",\n            \"edit_id\": \"Bulk_Edit_3\"\n        }\n    ],\n    \"processed\": true\n}",
+          "cookie": [],
+          "_postman_previewlanguage": "json"
+        }
+      ]
+    }
+  ]
+} 

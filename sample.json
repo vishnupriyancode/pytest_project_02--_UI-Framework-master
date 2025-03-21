@@ -1,0 +1,18 @@
+{
+  "id": "sample1",
+  "name": "Test JSON",
+  "description": "This is a sample JSON file for testing the upload functionality",
+  "timestamp": "2025-03-08T14:10:00Z",
+  "data": {
+    "key1": "value1",
+    "key2": "value2",
+    "key3": {
+      "nestedKey1": "nestedValue1",
+      "nestedKey2": 42,
+      "nestedKey3": true
+    },
+    "numericValue": 123.45,
+    "booleanValue": true,
+    "arrayValue": [1, 2, 3, 4, 5]
+  }
+} 

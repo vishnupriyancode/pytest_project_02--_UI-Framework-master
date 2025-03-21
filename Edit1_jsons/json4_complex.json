@@ -1,0 +1,91 @@
+{
+  "id": "complex-004",
+  "name": "Complex Structure Test",
+  "description": "Tests complex nested structures with mixed data types",
+  "version": 2.1,
+  "timestamp": "2023-06-15T14:25:30Z",
+  "organization": {
+    "id": "org-123",
+    "name": "Test Organization",
+    "details": {
+      "founded": "2010-01-15",
+      "headquarters": {
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "USA",
+        "address": {
+          "street": "123 Tech Lane",
+          "zip": "94105",
+          "coordinates": [37.7749, -122.4194]
+        }
+      },
+      "departments": [
+        {
+          "id": "dept-001",
+          "name": "Engineering",
+          "employees": [
+            {
+              "id": "emp-101",
+              "name": "John Doe",
+              "position": "Senior Developer",
+              "skills": ["Java", "Python", "AWS"],
+              "projects": [
+                {
+                  "id": "proj-a",
+                  "name": "API Gateway",
+                  "status": "in_progress"
+                },
+                {
+                  "id": "proj-b",
+                  "name": "Database Migration",
+                  "status": "planning"
+                }
+              ]
+            },
+            {
+              "id": "emp-102",
+              "name": "Jane Smith",
+              "position": "DevOps Engineer",
+              "skills": ["Docker", "Kubernetes", "Jenkins"]
+            }
+          ]
+        },
+        {
+          "id": "dept-002",
+          "name": "Marketing",
+          "employees": [
+            {
+              "id": "emp-201",
+              "name": "Alice Johnson",
+              "position": "Marketing Manager"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "stats": {
+    "active_users": 1250,
+    "total_projects": 42,
+    "performance": {
+      "response_time": 125.7,
+      "uptime": 99.98,
+      "metrics": [
+        {
+          "name": "api_latency",
+          "value": 45.2,
+          "unit": "ms"
+        },
+        {
+          "name": "error_rate",
+          "value": 0.05,
+          "unit": "percent"
+        }
+      ]
+    }
+  },
+  "flags": {
+    "beta_features": true,
+    "maintenance_mode": false
+  }
+} 

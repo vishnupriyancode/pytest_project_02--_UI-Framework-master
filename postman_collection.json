@@ -1,0 +1,68 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "JSON Processing API",
+		"description": "A collection for testing the JSON Processing API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Process JSON",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"file_path\": \"C:\\\\json_files\\\\example.json\",\n  \"operation\": \"process_data\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Example Data\",\n    \"description\": \"This is a sample JSON file for testing\",\n    \"properties\": {\n      \"value\": 42,\n      \"active\": true,\n      \"tags\": [\"sample\", \"test\", \"json\"]\n    }\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/process-json",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"process-json"
+					]
+				},
+				"description": "Process a JSON file with the Edit 1 feature"
+			},
+			"response": []
+		},
+		{
+			"name": "Process JSON (Custom Operation)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"file_path\": \"C:\\\\json_files\\\\product.json\",\n  \"operation\": \"custom_operation\",\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"Product Data\",\n    \"description\": \"This is product data for API processing\",\n    \"price\": 129.99,\n    \"inventory\": 25,\n    \"properties\": {\n      \"color\": \"blue\",\n      \"size\": \"medium\",\n      \"in_stock\": true\n    },\n    \"categories\": [\"electronics\", \"accessories\"]\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/process-json",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"process-json"
+					]
+				},
+				"description": "Process a JSON file with a custom operation"
+			},
+			"response": []
+		}
+	]
+}

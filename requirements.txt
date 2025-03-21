@@ -1,0 +1,32 @@
+# Async HTTP client
+aiohttp==3.8.5
+aiodns==3.0.0
+
+# Data processing
+pandas==1.5.3
+numpy==1.24.3
+openpyxl==3.1.2
+
+# Database
+sqlalchemy==2.0.19
+psycopg2-binary==2.9.6  # For PostgreSQL (optional)
+
+# Retry logic
+tenacity==8.2.2
+
+# HTTP client (for testing)
+requests==2.28.2
+
+# Logging and utilities
+python-json-logger==2.0.7
+tqdm==4.65.0  # Progress bars
+
+# Flask dependencies
+flask==2.2.3
+flask-cors==3.0.10
+werkzeug==2.2.3
+python-dotenv==1.0.0
+pydantic==2.3.0
+pytest-mock==3.11.1
+logging==0.4.9.6
+# SQLite is included in Python standard library

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Connectivity Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        .warning {
+            color: orange;
+        }
+        .status-info {
+            background-color: #e9f5fe;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .debug-section {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .debug-section h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Connectivity Test</h1>
+    
+    <div class="status-info" id="apiStatus">
+        Checking API status...
+    </div>
+    
+    <div>
+        <h2>Test Connection</h2>
+        <button id="testConnection">Test API Connection</button>
+        <div id="connectionResult"></div>
+    </div>
+    
+    <div>
+        <h2>Process Edit1_jsons</h2>
+        <button id="processEdit1">Process Edit1_jsons</button>
+        <div id="processResult"></div>
+    </div>
+    
+    <div>
+        <h2>Process Custom Folder</h2>
+        <input type="text" id="folderPath" placeholder="Enter folder path" 
+               value="C:\Cursor_Projects\pytest_project_02 -_UI Framework\Edit1_jsons" style="width: 400px;">
+        <button id="processFolder">Process Folder</button>
+        <div id="folderResult"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Debug Information</h3>
+        <div>
+            <strong>Browser:</strong> <span id="browserInfo"></span>
+        </div>
+        <div>
+            <strong>CORS Status:</strong> <span id="corsStatus">Unknown</span>
+        </div>
+        <div>
+            <strong>Last Error:</strong> <pre id="lastError">None</pre>
+        </div>
+        <button id="clearErrors">Clear Errors</button>
+    </div>
+
+    <script>
+        // Base API URL
+        const API_BASE_URL = 'http://localhost:5000';
+        
+        // Detect browser info
+        document.getElementById('browserInfo').textContent = navigator.userAgent;
+        
+        // Check API status on page load
+        window.addEventListener('load', async () => {
+            await checkApiStatus();
+        });
+        
+        // Check if API is running
+        async function checkApiStatus() {
+            const statusDiv = document.getElementById('apiStatus');
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const response = await fetch(`${API_BASE_URL}/test-connection`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = '<span class="success">✓ API is online and accessible</span>';
+                    document.getElementById('corsStatus').innerHTML = '<span class="success">CORS is working</span>';
+                } else {
+                    statusDiv.innerHTML = `<span class="warning">⚠ API returned status ${response.status}</span>`;
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    statusDiv.innerHTML = '<span class="error">✗ API request timed out</span>';
+                } else if (error instanceof TypeError) {
+                    statusDiv.innerHTML = '<span class="error">✗ API is not accessible (network error)</span>';
+                } else {
+                    statusDiv.innerHTML = `<span class="error">✗ Error connecting to API: ${error.message}</span>`;
+                    
+                    // Update CORS status if it's a CORS error
+                    if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+                        document.getElementById('corsStatus').innerHTML = '<span class="error">CORS is blocking requests</span>';
+                    }
+                }
+                
+                // Log the error details
+                logError(error);
+            }
+        }
+        
+        // Log errors to the debug section
+        function logError(error) {
+            const errorInfo = {
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                timestamp: new Date().toISOString()
+            };
+            
+            document.getElementById('lastError').textContent = JSON.stringify(errorInfo, null, 2);
+            console.error('API Error:', error);
+        }
+        
+        // Clear error logs
+        document.getElementById('clearErrors').addEventListener('click', () => {
+            document.getElementById('lastError').textContent = 'None';
+        });
+        
+        // Test API Connection
+        document.getElementById('testConnection').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = 'Testing connection...';
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch(`${API_BASE_URL}/test-connection`, {
+                    mode: 'cors',
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <p class="success">Connection successful!</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                // Update CORS status
+                document.getElementById('corsStatus').innerHTML = '<span class="success">CORS is working</span>';
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">Connection failed!</p>
+                    <pre>${error.message}</pre>
+                `;
+                
+                // Log detailed error
+                logError(error);
+                
+                // Update CORS status if it's a CORS error
+                if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+                    document.getElementById('corsStatus').innerHTML = '<span class="error">CORS is blocking requests</span>';
+                }
+            }
+        });
+        
+        // Process Edit1_jsons
+        document.getElementById('processEdit1').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('processResult');
+            resultDiv.innerHTML = 'Processing Edit1_jsons...';
+            
+            // Create AbortController for timeout handling
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/process-edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        folder_path: "C:\\Cursor_Projects\\pytest_project_02 -_UI Framework\\Edit1_jsons",
+                        edit_id: "Edit 1"
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                // Check if response is OK
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Process successful:', data);
+                resultDiv.innerHTML = `
+                    <p class="success">Processing successful!</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">Processing failed!</p>
+                    <pre>${error.message}</pre>
+                `;
+                
+                // Log detailed error
+                logError(error);
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        });
+        
+        // Process Custom Folder
+        document.getElementById('processFolder').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('folderResult');
+            const folderPath = document.getElementById('folderPath').value;
+            
+            if (!folderPath) {
+                resultDiv.innerHTML = '<p class="error">Please enter a folder path!</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = `Processing folder: ${folderPath}...`;
+            
+            // Create AbortController for timeout handling
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            
+            try {
+                // Try with both escaped and forward slash paths
+                let escapedPath = folderPath.replace(/\\/g, '\\\\'); // Double backslashes
+                
+                // Handle CORS preflight by checking the API first
+                const preflightCheck = await fetch(`${API_BASE_URL}/test-connection`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (!preflightCheck.ok) {
+                    throw new Error(`API server returned ${preflightCheck.status} during preflight check`);
+                }
+                
+                // Now make the actual request
+                const response = await fetch(`${API_BASE_URL}/process-folder`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        folder_path: escapedPath,
+                        edit_id: 'Custom Edit'
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                // Check if response is OK
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Folder processing successful:', data);
+                
+                resultDiv.innerHTML = `
+                    <p class="success">Folder processing successful!</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                // Update CORS status
+                document.getElementById('corsStatus').innerHTML = '<span class="success">CORS is working</span>';
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">Folder processing failed!</p>
+                    <pre>${error.message}</pre>
+                `;
+                
+                // Try alternative path format if it looks like a path error
+                if (error.message.includes('not found') || error.message.includes('path')) {
+                    resultDiv.innerHTML += `
+                        <p class="warning">Path error detected. Trying alternative path format...</p>
+                    `;
+                    
+                    try {
+                        // Try with forward slashes instead
+                        const altPath = folderPath.replace(/\\/g, '/');
+                        
+                        const response = await fetch(`${API_BASE_URL}/process-folder`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            mode: 'cors',
+                            body: JSON.stringify({
+                                folder_path: altPath,
+                                edit_id: 'Custom Edit'
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            resultDiv.innerHTML = `
+                                <p class="success">Folder processing successful with alternative path format!</p>
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            `;
+                        } else {
+                            resultDiv.innerHTML += `
+                                <p class="error">Alternative path format also failed.</p>
+                            `;
+                        }
+                    } catch (altError) {
+                        resultDiv.innerHTML += `
+                            <p class="error">Alternative path format also failed: ${altError.message}</p>
+                        `;
+                    }
+                }
+                
+                // Log detailed error
+                logError(error);
+                
+                // Update CORS status if it's a CORS error
+                if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+                    document.getElementById('corsStatus').innerHTML = '<span class="error">CORS is blocking requests</span>';
+                }
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        });
+    </script>
+</body>
+</html> 

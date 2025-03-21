@@ -1,0 +1,25 @@
+{
+  "id": "nested-002",
+  "name": "Nested Objects Test",
+  "description": "JSON with nested object structures",
+  "metadata": {
+    "version": "1.0",
+    "environment": "test",
+    "created_by": "API Test Suite"
+  },
+  "configuration": {
+    "settings": {
+      "timeout": 30,
+      "retry_count": 3,
+      "logging": {
+        "level": "debug",
+        "format": "json",
+        "destination": "console"
+      }
+    },
+    "flags": {
+      "enable_cache": true,
+      "strict_mode": false
+    }
+  }
+} 

@@ -1,0 +1,21 @@
+{
+  "id": "sample_edit_1",
+  "name": "Sample Edit",
+  "description": "This is a sample JSON file for testing the edit functionality",
+  "timestamp": "2023-07-15T10:30:00Z",
+  "properties": {
+    "type": "test",
+    "priority": "high",
+    "status": "pending"
+  },
+  "data": {
+    "field1": "value1",
+    "field2": 42,
+    "field3": true
+  },
+  "metadata": {
+    "created_by": "user123",
+    "version": "1.0.0",
+    "tags": ["test", "sample", "edit"]
+  }
+} 
