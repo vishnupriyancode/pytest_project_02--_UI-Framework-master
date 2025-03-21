@@ -12,6 +12,7 @@ const DashboardOverview = () => {
     pending: 6
   });
   
+  // Extended timeline data for month view
   const [timelineData, setTimelineData] = useState([
     { date: '2025-03-01', success: 12, failed: 2 },
     { date: '2025-03-02', success: 15, failed: 3 },
@@ -21,44 +22,82 @@ const DashboardOverview = () => {
     { date: '2025-03-06', success: 11, failed: 1 },
     { date: '2025-03-07', success: 7, failed: 0 },
     { date: '2025-03-08', success: 9, failed: 3 },
+    { date: '2025-03-09', success: 13, failed: 1 },
+    { date: '2025-03-10', success: 14, failed: 2 },
+    { date: '2025-03-11', success: 10, failed: 1 },
+    { date: '2025-03-12', success: 12, failed: 2 },
+    { date: '2025-03-13', success: 15, failed: 0 },
+    { date: '2025-03-14', success: 11, failed: 1 },
+    { date: '2025-03-15', success: 13, failed: 2 },
+    { date: '2025-03-16', success: 14, failed: 1 },
+    { date: '2025-03-17', success: 12, failed: 0 },
+    { date: '2025-03-18', success: 10, failed: 2 },
+    { date: '2025-03-19', success: 11, failed: 1 },
+    { date: '2025-03-20', success: 13, failed: 2 },
+    { date: '2025-03-21', success: 15, failed: 0 },
+    { date: '2025-03-22', success: 12, failed: 1 },
+    { date: '2025-03-23', success: 14, failed: 2 },
+    { date: '2025-03-24', success: 11, failed: 1 },
+    { date: '2025-03-25', success: 13, failed: 0 },
+    { date: '2025-03-26', success: 12, failed: 2 },
+    { date: '2025-03-27', success: 10, failed: 1 },
+    { date: '2025-03-28', success: 14, failed: 2 },
+    { date: '2025-03-29', success: 15, failed: 1 },
+    { date: '2025-03-30', success: 13, failed: 2 },
+    { date: '2025-03-31', success: 12, failed: 1 }
   ]);
   
   const [selectedTimeRange, setSelectedTimeRange] = useState('week');
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dateRange, setDateRange] = useState({
+    startDate: null,
+    endDate: null
+  });
   const [filteredTimelineData, setFilteredTimelineData] = useState([]);
   
-  // Filter data based on selected date and time range
+  // Filter data based on selected date range and time range
   useEffect(() => {
     let filteredData = [...timelineData];
     
-    // If a specific date is selected
-    if (selectedDate) {
-      const dateStr = selectedDate.toISOString().split('T')[0];
+    if (dateRange.startDate && dateRange.endDate) {
+      // If date range is selected, filter data between the dates
       filteredData = timelineData.filter(item => {
-        // For exact date match
-        return item.date === dateStr;
+        const itemDate = new Date(item.date);
+        return itemDate >= dateRange.startDate && itemDate <= dateRange.endDate;
       });
-      
-      // If no data for the selected date, keep original data
-      if (filteredData.length === 0) {
-        filteredData = [];
-      }
     } else {
-      // No date selected, show all data for the selected time range
-      filteredData = [...timelineData];
+      // Get current date for reference
+      const today = new Date('2025-03-31'); // Using the last date in our dataset as reference
+      
+      if (selectedTimeRange === 'week') {
+        // Get data for the last 7 days
+        const weekAgo = new Date(today);
+        weekAgo.setDate(today.getDate() - 6);
+        
+        filteredData = timelineData.filter(item => {
+          const itemDate = new Date(item.date);
+          return itemDate >= weekAgo && itemDate <= today;
+        });
+      } else if (selectedTimeRange === 'month') {
+        // Get data for the current month
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        
+        filteredData = timelineData.filter(item => {
+          const itemDate = new Date(item.date);
+          return itemDate >= startOfMonth && itemDate <= endOfMonth;
+        });
+      }
     }
-    
+
+    // Sort the filtered data by date
+    filteredData.sort((a, b) => new Date(a.date) - new Date(b.date));
     setFilteredTimelineData(filteredData);
-  }, [selectedDate, timelineData]);
+  }, [dateRange, selectedTimeRange, timelineData]);
   
-  // Handle date change
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
-  
-  // Clear the date filter
-  const clearDateFilter = () => {
-    setSelectedDate(null);
+  // Clear the date range
+  const clearDateRange = () => {
+    setDateRange({ startDate: null, endDate: null });
+    setSelectedTimeRange('week'); // Reset to week view
   };
   
   // Summary metrics
@@ -90,9 +129,7 @@ const DashboardOverview = () => {
   ];
   
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-      
+    <div className="space-y-6">
       {/* Summary metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {summaryMetrics.map((metric, index) => (
@@ -114,57 +151,111 @@ const DashboardOverview = () => {
       </div>
       
       {/* Chart sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-card shadow-card p-5 border border-ui-border">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
           <StatusChart data={statusData} />
         </div>
-        
-        <div className="bg-white rounded-card shadow-card p-5 border border-ui-border">
-          <div className="flex justify-between items-center mb-2">
-            <div className="text-xl font-bold">Request Timeline</div>
-            <div className="flex items-center space-x-2">
-              <button 
-                className={`px-3 py-1 text-sm rounded-button ${
-                  selectedTimeRange === 'week' 
-                    ? 'bg-brand-accent text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-                onClick={() => setSelectedTimeRange('week')}
-              >
-                Week
-              </button>
-              <button 
-                className={`px-3 py-1 text-sm rounded-button ${
-                  selectedTimeRange === 'month' 
-                    ? 'bg-brand-accent text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-                onClick={() => setSelectedTimeRange('month')}
-              >
-                Month
-              </button>
-              <div className="pl-2 border-l border-gray-200 ml-2">
-                <div className="flex items-center">
-                  <DatePicker
-                    selected={selectedDate}
-                    onChange={handleDateChange}
-                    dateFormat="yyyy-MM-dd"
-                    isClearable
-                    placeholderText="Select a date"
-                    className="px-3 py-1 text-sm rounded-button border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-accent"
-                  />
-                  {selectedDate && (
-                    <button
-                      onClick={clearDateFilter}
-                      className="ml-2 text-xs text-gray-500 hover:text-gray-700"
-                      title="Clear date filter"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="mb-6">
+            <div className="flex items-center justify-end space-x-4">
+              <div className="flex items-center bg-white rounded-lg border shadow-sm">
+                <button 
+                  className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
+                    selectedTimeRange === 'week' && !dateRange.startDate
+                      ? 'bg-blue-500 text-white' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => {
+                    setSelectedTimeRange('week');
+                    setDateRange({ startDate: null, endDate: null });
+                  }}
+                >
+                  Week
+                </button>
+                <button 
+                  className={`px-4 py-2 text-sm font-medium border-l ${
+                    selectedTimeRange === 'month' && !dateRange.startDate
+                      ? 'bg-blue-500 text-white' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => {
+                    setSelectedTimeRange('month');
+                    setDateRange({ startDate: null, endDate: null });
+                  }}
+                >
+                  Month
+                </button>
+              </div>
+              
+              <div className="flex items-center space-x-2 bg-white rounded-lg border shadow-sm p-1">
+                <div className="flex items-center space-x-2">
+                  <div className="relative">
+                    <DatePicker
+                      selected={dateRange.startDate}
+                      onChange={(date) => {
+                        setDateRange(prev => ({ ...prev, startDate: date }));
+                        setSelectedTimeRange('');
+                      }}
+                      selectsStart
+                      startDate={dateRange.startDate}
+                      endDate={dateRange.endDate}
+                      dateFormat="MMM dd, yyyy"
+                      className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholderText="From date"
+                      isClearable
+                      showPopperArrow={false}
+                      minDate={new Date('2025-03-01')}
+                      maxDate={new Date('2025-03-31')}
+                      customInput={
+                        <button className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-50 rounded-lg">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-gray-700">{dateRange.startDate ? dateRange.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'From date'}</span>
+                        </button>
+                      }
+                    />
+                  </div>
+                  <span className="text-gray-400">|</span>
+                  <div className="relative">
+                    <DatePicker
+                      selected={dateRange.endDate}
+                      onChange={(date) => {
+                        setDateRange(prev => ({ ...prev, endDate: date }));
+                        setSelectedTimeRange('');
+                      }}
+                      selectsEnd
+                      startDate={dateRange.startDate}
+                      endDate={dateRange.endDate}
+                      minDate={dateRange.startDate}
+                      dateFormat="MMM dd, yyyy"
+                      className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholderText="To date"
+                      isClearable
+                      showPopperArrow={false}
+                      maxDate={new Date('2025-03-31')}
+                      customInput={
+                        <button className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-50 rounded-lg">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-gray-700">{dateRange.endDate ? dateRange.endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'To date'}</span>
+                        </button>
+                      }
+                    />
+                  </div>
                 </div>
+                {(dateRange.startDate || dateRange.endDate) && (
+                  <button
+                    onClick={clearDateRange}
+                    className="ml-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md flex-shrink-0"
+                    title="Clear date range"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           </div>

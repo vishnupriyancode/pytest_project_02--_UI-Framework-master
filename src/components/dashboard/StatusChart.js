@@ -1,6 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { STATUS_COLORS, CHART_COLORS } from '../../theme/colorScheme';
+import { STATUS_COLORS } from '../../theme/colorScheme';
 
 const StatusChart = ({ data }) => {
   if (!data) return null;
@@ -14,37 +14,82 @@ const StatusChart = ({ data }) => {
   // Filter out zero values for a cleaner chart
   const filteredData = chartData.filter(item => item.value > 0);
   
-  // Use primary colors from our theme
-  const COLORS = CHART_COLORS.PRIMARY;
+  // Total number of requests for calculating percentages
+  const totalRequests = filteredData.reduce((sum, item) => sum + item.value, 0);
   
   const RADIAN = Math.PI / 180;
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, value, name }) => {
+    // Increase the radius to position labels further outside the pie
+    const radius = outerRadius * 1.4;
     
-    // Only show percentage for segments that are large enough
-    if (percent < 0.05) return null;
+    // Calculate the position for the label
+    const sin = Math.sin(-midAngle * RADIAN);
+    const cos = Math.cos(-midAngle * RADIAN);
+    
+    // Position the text further from the pie
+    const x = cx + radius * cos;
+    const y = cy + radius * sin;
+    
+    // Calculate anchor point on the pie for the line
+    const mx1 = cx + (outerRadius * 0.95) * cos;
+    const my1 = cy + (outerRadius * 0.95) * sin;
+    
+    // Add a middle point for the line to create an elbow
+    const mx2 = cx + (outerRadius * 1.2) * cos;
+    const my2 = cy + (outerRadius * 1.2) * sin;
+    
+    // Calculate the text anchor based on position
+    const textAnchor = cos >= 0 ? 'start' : 'end';
     
     return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor="middle" 
-        dominantBaseline="central"
-        fontWeight="bold"
-        fontSize="14"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
+      <g>
+        {/* Connecting line with elbow */}
+        <path
+          d={`M${mx1},${my1}L${mx2},${my2}L${x},${y}`}
+          stroke={filteredData[index].color}
+          fill="none"
+          strokeWidth={1}
+        />
+        
+        {/* Label background for better readability */}
+        <rect
+          x={x + (cos >= 0 ? 5 : -105)}
+          y={y - 20}
+          width="100"
+          height="40"
+          fill="white"
+          fillOpacity="0.9"
+          rx="4"
+        />
+        
+        {/* Status name */}
+        <text
+          x={x + (cos >= 0 ? 10 : -10)}
+          y={y - 8}
+          textAnchor={textAnchor}
+          fill="#374151"
+          fontSize="12"
+          fontWeight="500"
+        >
+          {name}
+        </text>
+        
+        {/* Value and percentage on second line */}
+        <text
+          x={x + (cos >= 0 ? 10 : -10)}
+          y={y + 8}
+          textAnchor={textAnchor}
+          fill="#374151"
+          fontSize="13"
+        >
+          <tspan fontWeight="600">{value}</tspan>
+          <tspan fill="#6B7280"> ({(percent * 100).toFixed(0)}%)</tspan>
+        </text>
+      </g>
     );
   };
 
-  // Total number of requests for displaying in the center
-  const totalRequests = filteredData.reduce((sum, item) => sum + item.value, 0);
-
-  // Custom tooltip formatter to show actual numbers
+  // Custom tooltip component
   const customTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -74,36 +119,27 @@ const StatusChart = ({ data }) => {
             cy="50%"
             labelLine={false}
             label={renderCustomizedLabel}
-            outerRadius={90}
-            innerRadius={45}
+            outerRadius={70}
             fill="#8884d8"
             dataKey="value"
-            stroke="none"
-            paddingAngle={1}
           >
             {filteredData.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={COLORS[index % COLORS.length]}
-                style={{ filter: 'drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.1))' }}
-              />
+              <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
           <Tooltip content={customTooltip} />
-          <Legend 
-            layout="horizontal" 
-            verticalAlign="bottom" 
-            align="center" 
+          <Legend
+            verticalAlign="bottom"
+            align="center"
             iconType="circle"
-            iconSize={10}
-            wrapperStyle={{ paddingTop: 10 }}
+            iconSize={8}
+            wrapperStyle={{ paddingTop: 20 }}
           />
         </PieChart>
       </ResponsiveContainer>
       {totalRequests > 0 && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          <div className="text-xl font-bold text-gray-700">{totalRequests}</div>
-          <div className="text-xs text-gray-500">requests</div>
+          <div className="text-base font-semibold text-white">{totalRequests} Requests</div>
         </div>
       )}
     </div>

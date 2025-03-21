@@ -7,11 +7,11 @@
 
 // Main Status Colors
 const STATUS_COLORS = {
-  // Professional indigo/teal palette for a modern look
-  SUCCESS: '#06B6D4', // Vibrant teal
-  FAILED: '#F43F5E',  // Soft rose
-  PENDING: '#FBBF24', // Warm amber
-  PROCESSING: '#8B5CF6', // Rich purple
+  // Professional gray palette
+  SUCCESS: '#4A4A4A', // Dark Gray
+  FAILED: '#A8A8A8',  // Darker Silver
+  PENDING: '#D3D3D3', // Light Silver
+  PROCESSING: '#E8E8E8', // Additional Light Gray if needed
 };
 
 // Chart and Visualization Colors
@@ -26,17 +26,17 @@ const CHART_COLORS = {
   
   // Secondary palette with softer tones (for line/area charts)
   SECONDARY: [
-    '#0EA5E9', // Sky blue
-    '#F97316', // Orange
-    '#10B981', // Emerald
-    '#8B5CF6', // Violet
+    '#4A4A4A', // Dark Gray for Success
+    '#A8A8A8', // Darker Silver for Failed
+    '#D3D3D3', // Light Silver for Pending
+    '#E8E8E8', // Light Gray
   ],
   
   // Gradient backgrounds for cards and containers
   GRADIENTS: {
-    SUCCESS: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
-    FAILED: 'linear-gradient(135deg, #F43F5E 0%, #E11D48 100%)',
-    INFO: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
+    SUCCESS: 'linear-gradient(135deg, #4A4A4A 0%, #3A3A3A 100%)',
+    FAILED: 'linear-gradient(135deg, #A8A8A8 0%, #989898 100%)',
+    INFO: 'linear-gradient(135deg, #D3D3D3 0%, #C4C4C4 100%)',
   },
 };
 
