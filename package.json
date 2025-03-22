@@ -20,12 +20,15 @@
     "recharts": "^2.15.1"
   },
   "scripts": {
-    "start": "set PORT=3001 && react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "set PORT=3001 && npx --no-install react-scripts start",
+    "build": "npx --no-install react-scripts build",
+    "test": "npx --no-install react-scripts test",
+    "eject": "npx --no-install react-scripts eject"
   },
   "devDependencies": {
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-react": "^7.23.9",
     "autoprefixer": "^10.4.16",
     "html-webpack-plugin": "^5.6.3",
     "postcss": "^8.4.31",
@@ -46,5 +49,21 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "description": "This solution provides a robust framework for processing JSON files, handling API requests, and storing responses.",
+  "main": "postcss.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vishnupriyancode/pytest_project_02--_UI-Framework-master.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vishnupriyancode/pytest_project_02--_UI-Framework-master/issues"
+  },
+  "homepage": "."
 }
