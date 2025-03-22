@@ -20,28 +20,59 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app, 
-     resources={r"/*": {
-         "origins": ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "*"],
-         "methods": ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-         "allow_headers": ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
-         "supports_credentials": True,
-         "max_age": 3600  # Cache preflight response for 1 hour
-     }},
-     send_wildcard=True)
 
-# Add CORS headers to all responses for extra protection
+# Configure CORS properly
+CORS(app, 
+     resources={
+         r"/*": {
+             "origins": ["http://localhost:3000", "http://127.0.0.1:3000", 
+                        "http://localhost:3002", "http://127.0.0.1:3002",
+                        "http://localhost:5000", "http://127.0.0.1:5000"],
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+             "expose_headers": ["Content-Range", "X-Content-Range"],
+             "supports_credentials": True,
+             "max_age": 120  # Cache preflight response for 2 minutes
+         }
+     }
+)
+
 @app.after_request
-def add_cors_headers(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS,PUT,DELETE')
+def after_request(response):
+    origin = request.headers.get('Origin')
+    if origin in ["http://localhost:3000", "http://127.0.0.1:3000", 
+                 "http://localhost:3002", "http://127.0.0.1:3002",
+                 "http://localhost:5000", "http://127.0.0.1:5000"]:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+    else:
+        # Default to the frontend origin if none match
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3002')
+        
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
+    response.headers.add('Access-Control-Max-Age', '120')
     return response
 
 # Configure Flask for larger requests
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max size
 app.config['PROPAGATE_EXCEPTIONS'] = True
+
+@app.route('/')
+def index():
+    return jsonify({
+        'status': 'online',
+        'message': 'API server is running',
+        'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/health-check')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'message': 'API server is healthy',
+        'timestamp': datetime.now().isoformat()
+    })
 
 @app.route('/test-connection', methods=['GET', 'OPTIONS'])
 def test_connection():
@@ -51,7 +82,7 @@ def test_connection():
         
     return jsonify({
         'status': 'success',
-        'message': 'API connection successful',
+        'message': 'Connection successful',
         'timestamp': datetime.now().isoformat()
     })
 
@@ -369,19 +400,22 @@ def process_folder_preflight():
     response = jsonify({'status': 'success'})
     return response, 204
 
+@app.route('/process-all-jsons', methods=['GET', 'POST', 'OPTIONS'])
+def process_all_jsons():
+    """Process all JSON files endpoint"""
+    if request.method == 'OPTIONS':
+        return '', 204
+        
+    try:
+        return jsonify({
+            'status': 'success',
+            'message': 'Processing all JSONs',
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Error processing JSONs: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
-    logger.info("Starting JSON Processing API on http://localhost:8080")
-    app.run(host='0.0.0.0', port=8080, debug=True)
-
-# Example usage of the API
-response = requests.post(
-    'http://localhost:8080/process-folder',
-    json={
-        'folder_path': "C:/Cursor_Projects/pytest_project_02 -_UI Framework/Edit1_jsons",
-        'edit_id': "Edit 1"
-    },
-    headers={'Content-Type': 'application/json'}
-)
-
-print(response.status_code)
-print(response.json()) 
+    logger.info("Starting JSON Processing API on http://localhost:5000")
+    app.run(host='0.0.0.0', port=5000, debug=True) 

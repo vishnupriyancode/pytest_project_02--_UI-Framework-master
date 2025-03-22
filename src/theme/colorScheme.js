@@ -31,23 +31,16 @@ const CHART_COLORS = {
     '#D3D3D3', // Light Silver for Pending
     '#E8E8E8', // Light Gray
   ],
-  
-  // Gradient backgrounds for cards and containers
-  GRADIENTS: {
-    SUCCESS: 'linear-gradient(135deg, #4A4A4A 0%, #3A3A3A 100%)',
-    FAILED: 'linear-gradient(135deg, #A8A8A8 0%, #989898 100%)',
-    INFO: 'linear-gradient(135deg, #D3D3D3 0%, #C4C4C4 100%)',
-  },
 };
 
 // UI Component Colors
 const UI_COLORS = {
   // Button colors
   BUTTON: {
-    PRIMARY: '#0891B2', // Teal 600
-    SECONDARY: '#6B7280', // Gray 500
-    DANGER: '#E11D48', // Rose 600
-    SUCCESS: '#059669', // Emerald 600
+    PRIMARY: '#4A4A4A', // Dark Gray
+    SECONDARY: '#A8A8A8', // Darker Silver
+    DANGER: '#808080', // Medium Gray
+    SUCCESS: '#4A4A4A', // Dark Gray
   },
   
   // Background colors
@@ -55,7 +48,7 @@ const UI_COLORS = {
     LIGHT: '#F9FAFB', // Gray 50
     CARD: '#FFFFFF',
     DARK: '#1F2937', // Gray 800
-    HIGHLIGHT: '#F0F9FF', // Sky 50
+    HIGHLIGHT: '#F3F4F6', // Gray 100
   },
   
   // Text colors
@@ -70,7 +63,7 @@ const UI_COLORS = {
   BORDER: {
     LIGHT: '#E5E7EB', // Gray 200
     MEDIUM: '#D1D5DB', // Gray 300
-    FOCUS: '#0EA5E9', // Sky 500
+    FOCUS: '#4A4A4A', // Dark Gray
   }
 };
 

@@ -11,6 +11,9 @@ import logging
 import subprocess
 import requests
 from pathlib import Path
+from api_server import app, logger
+import psutil
+import socket
 
 # Configure logging
 logging.basicConfig(
@@ -58,6 +61,21 @@ def start_api_server():
         logger.error(f"Error starting API server: {e}")
         return False
 
+def is_port_in_use(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
+
+def kill_process_on_port(port):
+    for proc in psutil.process_iter(['pid', 'name', 'connections']):
+        try:
+            for conn in proc.connections():
+                if conn.laddr.port == port:
+                    proc.kill()
+                    return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+    return False
+
 def main():
     """Main entry point."""
     logger.info("Checking if API server is running...")
@@ -95,5 +113,32 @@ def main():
     
     return 0
 
-if __name__ == "__main__":
-    sys.exit(main()) 
+if __name__ == '__main__':
+    try:
+        port = 5000
+        
+        # Check if port is in use
+        if is_port_in_use(port):
+            logger.warning(f"Port {port} is already in use. Attempting to free it...")
+            if kill_process_on_port(port):
+                logger.info(f"Successfully killed process using port {port}")
+            else:
+                logger.error(f"Could not free port {port}. Please close any application using it.")
+                exit(1)
+        
+        logger.info(f"Starting API server on http://localhost:{port}")
+        print(f"Starting API server on http://localhost:{port}")
+        print("Press Ctrl+C to stop")
+        
+        # Run the Flask application
+        app.run(
+            host='0.0.0.0',      # Allow external connections
+            port=port,           # Use specified port
+            debug=True,          # Enable debug mode
+            use_reloader=False,  # Disable auto-reload to prevent numpy issues
+            threaded=True       # Enable threading for multiple requests
+        )
+    except Exception as e:
+        logger.error(f"Failed to start server: {str(e)}")
+        print(f"Error: {str(e)}")
+        raise 

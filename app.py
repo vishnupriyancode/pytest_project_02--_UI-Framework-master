@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import json
@@ -18,8 +18,20 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app
 app = Flask(__name__)
 
-# Configure CORS
-CORS(app)
+# Configure CORS to allow requests from your frontend
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3001", "http://127.0.0.1:3001"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
+
+# Add this near the top of app.py
+if not os.path.exists('static'):
+    os.makedirs('static')
+if not os.path.exists('uploads'):
+    os.makedirs('uploads')
 
 # Health check endpoint
 @app.route('/health-check', methods=['GET', 'OPTIONS'])
@@ -51,6 +63,11 @@ def process_all_jsons():
             "status": "error",
             "message": str(e)
         }), 500
+
+# Serve the main page
+@app.route('/')
+def serve_index():
+    return send_from_directory('static', 'index.html')
 
 # Process Edit endpoint
 @app.route('/process-edit', methods=['POST', 'OPTIONS'])
@@ -425,34 +442,132 @@ def process_all_files():
         }), 500
 
 # Route to upload BRD document
-@app.route('/upload-brd', methods=['GET', 'POST'])
+@app.route('/upload-brd', methods=['POST'])
 def upload_brd():
-    if request.method == 'POST':
-        # Check if the post request has the file part
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file part'}), 400
-        file = request.files['file']
-        # If the user does not select a file, the browser submits an empty file without a filename
-        if file.filename == '':
-            return jsonify({'error': 'No selected file'}), 400
-        if file and file.filename.endswith('.doc'):
-            # Save the file to a temporary location
-            file_path = os.path.join('uploads', file.filename)
-            file.save(file_path)
-            # Here you would call the AI processing function
-            # For now, just return a success message
-            return jsonify({'message': 'File uploaded successfully', 'file_path': file_path}), 200
-    # Serve a simple HTML form for file upload
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file and (file.filename.endswith('.doc') or file.filename.endswith('.docx')):
+        # Create uploads directory if it doesn't exist
+        if not os.path.exists('uploads'):
+            os.makedirs('uploads')
+        
+        # Save the uploaded file
+        file_path = os.path.join('uploads', file.filename)
+        file.save(file_path)
+        
+        # Here you would add your AI processing logic
+        # For now, we'll just return a success message
+        return jsonify({
+            'message': 'File uploaded successfully',
+            'file_path': file_path,
+            'status': 'Processing completed'
+        }), 200
+    
+    return jsonify({'error': 'Invalid file type'}), 400
+
+@app.route('/case-creation')
+def case_creation():
     return '''
-    <!doctype html>
-    <title>Upload BRD Document</title>
-    <h1>Upload BRD Document</h1>
-    <form method="post" action="/upload-brd" enctype="multipart/form-data">
-      <input type="file" name="file">
-      <input type="submit" value="Upload">
-    </form>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Case Creation</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .upload-form { 
+                margin-top: 20px;
+                padding: 20px;
+                background-color: #f8f0ff;
+                border-radius: 8px;
+            }
+            .upload-form input[type="file"] {
+                margin: 10px 0;
+            }
+            .upload-form button {
+                background-color: #7e57c2;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .upload-form button:hover {
+                background-color: #6a4caf;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Case Creation</h1>
+        <p>Upload your BRD document here.</p>
+        <div class="upload-form">
+            <form method="post" action="/upload-brd" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".doc,.docx" required>
+                <br>
+                <button type="submit">Generate Test Cases</button>
+            </form>
+        </div>
+        <script>
+            // Add drag and drop functionality
+            const form = document.querySelector('form');
+            form.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            
+            form.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    form.querySelector('input[type="file"]').files = files;
+                }
+            });
+        </script>
+    </body>
+    </html>
+    '''
+
+@app.route('/json-creation')
+def json_creation():
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>JSON Creation</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+        </style>
+    </head>
+    <body>
+        <h1>JSON Creation</h1>
+        <p>Create your JSON files here.</p>
+    </body>
+    </html>
+    '''
+
+@app.route('/file-comparison')
+def file_comparison():
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>File Comparison</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+        </style>
+    </head>
+    <body>
+        <h1>File Comparison</h1>
+        <p>Compare your files here.</p>
+    </body>
+    </html>
     '''
 
 if __name__ == '__main__':
     logger.info("Starting JSON Processing API")
-    app.run(host='0.0.0.0', port=5000, debug=True) 
+    app.run(host='localhost', port=3001, debug=True) 

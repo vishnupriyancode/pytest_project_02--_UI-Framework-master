@@ -7,17 +7,17 @@ module.exports = {
       colors: {
         // Status colors
         status: {
-          success: '#06B6D4', // Teal 500
-          failed: '#F43F5E',  // Rose 500
-          pending: '#FBBF24', // Amber 400
-          processing: '#8B5CF6', // Violet 500
+          success: '#4A4A4A', // Dark Gray
+          failed: '#A8A8A8',  // Darker Silver
+          pending: '#D3D3D3', // Light Silver
+          processing: '#E8E8E8', // Light Gray
         },
         
         // Custom brand colors
         brand: {
-          primary: '#0891B2', // Teal 600
-          secondary: '#6B7280', // Gray 500
-          accent: '#0EA5E9', // Sky 500
+          primary: '#4A4A4A', // Dark Gray
+          secondary: '#A8A8A8', // Darker Silver
+          accent: '#D3D3D3', // Light Silver
         },
         
         // Semantic UI colors

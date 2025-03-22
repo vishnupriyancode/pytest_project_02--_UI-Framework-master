@@ -13,16 +13,28 @@ const apiClient = axios.create({
   withCredentials: true
 });
 
-// Add request interceptor for retries
+// Add request interceptor for retries and error handling
 apiClient.interceptors.request.use(
   config => {
     // Add retry count to config if not present
     if (!config.retryCount) {
       config.retryCount = 0;
     }
+    
+    // Add timestamp to prevent caching
+    if (config.method === 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now()
+      };
+    }
+    
     return config;
   },
-  error => Promise.reject(error)
+  error => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Add response interceptor for better error handling and retries
@@ -51,12 +63,37 @@ apiClient.interceptors.response.use(
     // Log the error details
     if (error.code === 'ECONNABORTED') {
       console.error('Request timeout:', error);
+      createToast('Request timed out. Please try again.', 'error');
     } else if (error.response) {
       console.error('API Error:', error.response.status, error.response.data);
+      
+      // Handle specific HTTP status codes
+      switch (error.response.status) {
+        case 401:
+          createToast('Authentication required. Please log in again.', 'error');
+          // Optionally redirect to login page
+          break;
+        case 403:
+          createToast('Access denied. You do not have permission.', 'error');
+          break;
+        case 404:
+          createToast('Resource not found.', 'error');
+          break;
+        case 429:
+          createToast('Too many requests. Please try again later.', 'error');
+          break;
+        case 500:
+          createToast('Server error. Please try again later.', 'error');
+          break;
+        default:
+          createToast(error.response.data.message || 'An error occurred.', 'error');
+      }
     } else if (error.request) {
       console.error('No response received:', error.request);
+      createToast('No response from server. Please check your connection.', 'error');
     } else {
       console.error('Error:', error.message);
+      createToast('An unexpected error occurred.', 'error');
     }
     
     return Promise.reject(error);
@@ -66,17 +103,34 @@ apiClient.interceptors.response.use(
 // Export the configured client
 export default apiClient;
 
-// Health check function
+// Health check function with improved error handling
 export const checkApiHealth = async () => {
   try {
-    const response = await apiClient.get(API_CONFIG.HEALTH_CHECK.ENDPOINT, {
+    // First test the connection
+    const connectionTest = await testApiConnection(API_CONFIG.HEALTH_CHECK.TIMEOUT);
+    if (!connectionTest.success) {
+      return {
+        success: false,
+        error: connectionTest.error,
+        isTimeout: connectionTest.error.includes('timeout')
+      };
+    }
+    
+    // If connection test passes, make the actual health check request
+    const response = await apiClient.get(API_CONFIG.ENDPOINTS.HEALTH_CHECK, {
       timeout: API_CONFIG.HEALTH_CHECK.TIMEOUT
     });
-    return { success: true, data: response.data };
+    
+    return { 
+      success: true, 
+      data: response.data,
+      status: response.status
+    };
   } catch (error) {
+    console.error('Health check failed:', error);
     return { 
       success: false, 
-      error: error.message,
+      error: error.message || 'Health check failed',
       isTimeout: error.code === 'ECONNABORTED'
     };
   }
@@ -117,10 +171,10 @@ export const processAllJsons = async () => {
   }
 };
 
-// Get list of processed JSON files
+// Get list of processed JSON files with error handling
 export const getProcessedJsons = async () => {
   try {
-    const response = await apiClient.get('/processed-jsons');
+    const response = await apiClient.get(API_CONFIG.ENDPOINTS.GET_PROCESSED);
     return response.data;
   } catch (error) {
     console.error('Error fetching Run JSONs:', error);
@@ -128,7 +182,7 @@ export const getProcessedJsons = async () => {
   }
 };
 
-// Download Excel report for specific processed JSON
+// Download Excel report with improved error handling
 export const downloadExcelReport = async (id, retryCount = 0) => {
   try {
     console.log(`Initiating Excel report download for ID: ${id} (Attempt: ${retryCount + 1})`);
@@ -138,25 +192,20 @@ export const downloadExcelReport = async (id, retryCount = 0) => {
       console.warn('Using API URL:', API_BASE_URL);
     }
     
-    // Dynamically import the testApiConnection function
-    const apiConfigModule = await import('../config/apiConfig');
-    const testApiConnection = apiConfigModule.testApiConnection;
-    
     // Check if API is accessible before proceeding
     const connectionTest = await testApiConnection(5000);
     if (!connectionTest.success) {
-      console.error('API server is not reachable:', connectionTest.error);
       throw new Error(`Failed to connect to API server: ${connectionTest.error || 'Unknown error'}`);
     }
     
     // Create a direct link to download the file
-    const downloadUrl = `${API_BASE_URL}/download-excel/${id}`;
+    const downloadUrl = `${API_BASE_URL}${API_CONFIG.ENDPOINTS.DOWNLOAD_EXCEL(id)}`;
     console.log(`Download URL: ${downloadUrl}`);
     
     // Create an anchor element and trigger the download
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.target = '_blank'; // Open in new tab
+    link.target = '_blank';
     link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
@@ -169,13 +218,14 @@ export const downloadExcelReport = async (id, retryCount = 0) => {
   } catch (error) {
     console.error('Error downloading Excel report:', error);
     
-    // Retry logic
+    // Retry logic with exponential backoff
     if (retryCount < API_CONFIG.RETRY_ATTEMPTS - 1) {
-      console.log(`Retrying download (${retryCount + 2}/${API_CONFIG.RETRY_ATTEMPTS})...`);
+      const delay = Math.min(1000 * (Math.pow(2, retryCount) - 1), 10000);
+      console.log(`Retrying download (${retryCount + 2}/${API_CONFIG.RETRY_ATTEMPTS}) after ${delay}ms...`);
       return new Promise(resolve => {
         setTimeout(() => {
           resolve(downloadExcelReport(id, retryCount + 1));
-        }, 2000); // Wait 2 seconds before retrying
+        }, delay);
       });
     }
     
@@ -183,78 +233,39 @@ export const downloadExcelReport = async (id, retryCount = 0) => {
   }
 };
 
-// Upload multiple JSON files for bulk processing
+// Upload multiple JSON files with improved error handling
 export const uploadMultipleJsonFiles = async (formData) => {
   try {
-    // First check API connection to ensure server is running
+    // First check API connection
     console.log('Checking API connectivity before upload...');
-    try {
-      const checkResponse = await fetch(`${API_BASE_URL}/health-check`, { 
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'include',
-        headers: API_CONFIG.HEADERS
-      });
-      
-      if (!checkResponse.ok) {
-        throw new Error(`API server returned ${checkResponse.status}: ${checkResponse.statusText}`);
-      }
-    } catch (connError) {
-      console.error('API connectivity check failed:', connError);
-      throw new Error(`API server is not accessible: ${connError.message}`);
+    const connectionTest = await testApiConnection(5000);
+    if (!connectionTest.success) {
+      throw new Error(`API server is not accessible: ${connectionTest.error}`);
     }
     
     // Log the request for debugging
-    console.log('Sending bulk upload request to:', `${API_BASE_URL}/process-multiple-jsons`);
+    console.log('Sending bulk upload request to:', `${API_BASE_URL}${API_CONFIG.ENDPOINTS.PROCESS_MULTIPLE}`);
     
-    // Try direct fetch API with proper CORS settings
-    const response = await fetch(`${API_BASE_URL}/process-multiple-jsons`, {
-      method: 'POST',
-      body: formData,
-      mode: 'cors',
-      credentials: 'include',
+    const response = await apiClient.post(API_CONFIG.ENDPOINTS.PROCESS_MULTIPLE, formData, {
       headers: {
         'Accept': 'application/json'
-        // Don't set Content-Type for multipart/form-data, browser will add it with boundary
       }
     });
     
-    // Check response status
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Server returned ${response.status}: ${response.statusText}`);
-      console.error('Error response:', errorText);
-      throw new Error(`Server error: ${response.status} ${response.statusText}`);
-    }
-    
-    // Parse response data
-    const responseData = await response.json();
-    console.log('Upload response:', responseData);
-    return responseData;
+    return response.data;
   } catch (error) {
-    console.error('Error processing multiple files:', error);
-    
-    // Enhance error details for debugging
-    let errorMessage = 'Network error during file upload';
-    if (error.name === 'AbortError') {
-      errorMessage = 'Request timed out';
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    const enhancedError = new Error(errorMessage);
-    enhancedError.originalError = error;
-    throw enhancedError;
+    console.error('Error uploading files:', error);
+    throw error;
   }
 };
 
-// Original API functions for file upload, etc.
+// Original API functions with improved error handling
 export const uploadJsonFile = async (file) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await apiClient.post('/upload-json', formData, {
+    const response = await apiClient.post(API_CONFIG.ENDPOINTS.UPLOAD_JSON, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -268,7 +279,7 @@ export const uploadJsonFile = async (file) => {
 
 export const getResponseById = async (editId) => {
   try {
-    const response = await apiClient.get(`/get-response/${editId}`);
+    const response = await apiClient.get(API_CONFIG.ENDPOINTS.GET_RESPONSE(editId));
     return response.data;
   } catch (error) {
     console.error('Error fetching response:', error);
