@@ -19,15 +19,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Configure CORS
-CORS(app, 
-     resources={
-         r"/*": {
-             "origins": ["http://localhost:3002"],
-             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-             "supports_credentials": True
-         }
-     })
+CORS(app)
 
 # Health check endpoint
 @app.route('/health-check', methods=['GET', 'OPTIONS'])
@@ -431,6 +423,35 @@ def process_all_files():
             'message': 'Failed to process files',
             'error': error_message
         }), 500
+
+# Route to upload BRD document
+@app.route('/upload-brd', methods=['GET', 'POST'])
+def upload_brd():
+    if request.method == 'POST':
+        # Check if the post request has the file part
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an empty file without a filename
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+        if file and file.filename.endswith('.doc'):
+            # Save the file to a temporary location
+            file_path = os.path.join('uploads', file.filename)
+            file.save(file_path)
+            # Here you would call the AI processing function
+            # For now, just return a success message
+            return jsonify({'message': 'File uploaded successfully', 'file_path': file_path}), 200
+    # Serve a simple HTML form for file upload
+    return '''
+    <!doctype html>
+    <title>Upload BRD Document</title>
+    <h1>Upload BRD Document</h1>
+    <form method="post" action="/upload-brd" enctype="multipart/form-data">
+      <input type="file" name="file">
+      <input type="submit" value="Upload">
+    </form>
+    '''
 
 if __name__ == '__main__':
     logger.info("Starting JSON Processing API")
