@@ -7,6 +7,7 @@ import DashboardTab from './components/DashboardTab';
 import TabNavigation from './components/TabNavigation';
 import NetworkStatusIndicator from './components/common/NetworkStatusIndicator';
 import { processAllJsons } from './services/apiService';
+import CreationTab from './components/CreationTab';
 import './index.css';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard' },
+    { id: 'creation', label: 'Creation' },
     { id: 'processed', label: 'Run JSONs' },
     { id: 'request', label: 'Request' },
     { id: 'responses', label: 'API Responses' }
@@ -61,6 +63,8 @@ function App() {
         {activeTab === 'responses' && <DataTable />}
 
         {activeTab === 'processed' && <ProcessedJsons />}
+
+        {activeTab === 'creation' && <CreationTab />}
       </div>
       <NetworkStatusIndicator />
     </div>
