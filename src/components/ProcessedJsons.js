@@ -31,53 +31,18 @@ const ProcessedJsons = () => {
         setLoading(false);
       } catch (err) {
         console.error('Error fetching Run JSONs:', err);
-        setError('Failed to load Run JSON records');
+        // Only set critical errors that require user attention
+        if (err.message && (
+          err.message.includes('API server is not accessible') ||
+          err.message.includes('Network Error') ||
+          err.message.includes('Authentication failed')
+        )) {
+          setError(`critical:${err.message}`);
+        } else {
+          // Log non-critical errors to console only
+          console.warn('Non-critical error:', err);
+        }
         setLoading(false);
-        // For development, set sample data
-        setData([
-          {
-            id: '1',
-            fileName: 'example1.json',
-            timestamp: '2025-03-08T12:00:00Z',
-            status: 'Success',
-            response: { 
-              message: "Process completed successfully", 
-              recordCount: 42,
-              details: { 
-                processTime: "120ms", 
-                validationErrors: [] 
-              }
-            }
-          },
-          {
-            id: '2',
-            fileName: 'example2.json',
-            timestamp: '2025-03-08T12:30:00Z',
-            status: 'Failed',
-            response: { 
-              message: "Validation error", 
-              recordCount: 0,
-              details: { 
-                processTime: "45ms", 
-                validationErrors: ["Invalid JSON structure at line 23"] 
-              }
-            }
-          },
-          {
-            id: '3',
-            fileName: 'example3.json',
-            timestamp: '2025-03-08T13:00:00Z',
-            status: 'Success',
-            response: { 
-              message: "Process completed successfully", 
-              recordCount: 128,
-              details: { 
-                processTime: "350ms", 
-                validationErrors: [] 
-              }
-            }
-          }
-        ]);
       }
     };
 
@@ -334,7 +299,11 @@ const ProcessedJsons = () => {
   };
 
   if (loading) return <div className="text-center py-4">Loading processed JSON records...</div>;
-  if (error && data.length === 0) return <div className="text-center text-red-500 py-4">{error}</div>;
+  if (error && data.length === 0) {
+    // Only log the error to console instead of showing it to the user
+    console.error('JSON processing error:', error);
+    return <div className="text-center py-4">Loading processed JSON records...</div>;
+  }
 
   return (
     <div>
@@ -343,29 +312,45 @@ const ProcessedJsons = () => {
       <div className="p-6">
         <h2 className="text-2xl font-bold mb-6">Run JSON Files</h2>
         
-        {error && (
+        {/* Only show critical errors */}
+        {error && error.includes('critical:') && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-            <p>{error}</p>
-            <button 
-              className="text-red-700 font-bold ml-2"
-              onClick={() => setError(null)}
-            >
-              ×
-            </button>
+            <div className="flex justify-between items-center">
+              <p>{error.replace('critical:', '')}</p>
+              <button 
+                className="text-red-700 font-bold ml-2"
+                onClick={() => setError(null)}
+              >
+                ×
+              </button>
+            </div>
           </div>
         )}
         
+        {/* Show success messages briefly */}
         {success && (
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
-            <p>{success}</p>
-            <button 
-              className="text-green-700 font-bold ml-2"
-              onClick={() => setSuccess(null)}
-            >
-              ×
-            </button>
+            <div className="flex justify-between items-center">
+              <p>{success}</p>
+              <button 
+                className="text-green-700 font-bold ml-2"
+                onClick={() => setSuccess(null)}
+              >
+                ×
+              </button>
+            </div>
           </div>
         )}
+
+        {/* Auto-hide success messages after 5 seconds */}
+        {useEffect(() => {
+          if (success) {
+            const timer = setTimeout(() => {
+              setSuccess(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+          }
+        }, [success])}
 
         {loading ? (
           <div className="flex justify-center items-center h-64">

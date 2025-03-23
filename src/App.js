@@ -14,24 +14,32 @@ import './index.css';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [processingStatus, setProcessingStatus] = useState({ loading: false, message: '' });
+  const [processingStatus, setProcessingStatus] = useState({ loading: false, message: '', error: false });
 
   // Automatically process JSON files on application startup
   useEffect(() => {
     const autoProcessJsons = async () => {
       try {
-        setProcessingStatus({ loading: true, message: 'Processing JSON files...' });
+        setProcessingStatus({ loading: true, message: 'Processing JSON files...', error: false });
         const result = await processAllJsons();
-        setProcessingStatus({ 
-          loading: false, 
-          message: `Successfully processed ${result.processedCount} JSON files. Excel report generated.` 
-        });
+        if (result && result.processedCount > 0) {
+          setProcessingStatus({ 
+            loading: false, 
+            message: `Successfully processed ${result.processedCount} JSON files. Excel report generated.`,
+            error: false
+          });
+          // Clear success message after 5 seconds
+          setTimeout(() => {
+            setProcessingStatus({ loading: false, message: '', error: false });
+          }, 5000);
+        } else {
+          // If no files were processed, don't show any message
+          setProcessingStatus({ loading: false, message: '', error: false });
+        }
       } catch (error) {
         console.error('Auto-processing error:', error);
-        setProcessingStatus({ 
-          loading: false, 
-          message: 'Error processing JSON files. See console for details.' 
-        });
+        // Don't show error message to user, just log to console
+        setProcessingStatus({ loading: false, message: '', error: true });
       }
     };
 
@@ -51,8 +59,12 @@ function App() {
       <div className="min-h-screen bg-gray-100">
         <Header />
         <div className="container mx-auto py-6 px-4">
-          {processingStatus.message && (
-            <div className={`mb-4 p-4 rounded-md ${processingStatus.loading ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+          {processingStatus.message && !processingStatus.error && (
+            <div className={`mb-4 p-4 rounded-md ${
+              processingStatus.loading 
+                ? 'bg-blue-100 text-blue-700' 
+                : 'bg-green-100 text-green-700'
+            }`}>
               {processingStatus.message}
             </div>
           )}
