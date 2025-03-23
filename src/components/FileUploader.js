@@ -9,13 +9,13 @@ const FileUploader = ({ onUploadSuccess }) => {
 
   const validateJsonFile = (file) => {
     // Check if file is selected
-    if (!file) return null; // Don't show error for no file
+    if (!file) return "Please select a JSON file";
     
     // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) return "critical:File size exceeds 5MB limit";
+    if (file.size > 5 * 1024 * 1024) return "File size exceeds 5MB limit";
     
     // Check file extension
-    if (!file.name.toLowerCase().endsWith('.json')) return "critical:Selected file must be a JSON file (.json)";
+    if (!file.name.toLowerCase().endsWith('.json')) return "Selected file must be a JSON file (.json)";
     
     return null;
   };
@@ -31,11 +31,6 @@ const FileUploader = ({ onUploadSuccess }) => {
       const validationError = validateJsonFile(selectedFile);
       if (validationError) {
         setError(validationError);
-        // Clear the file input if there's a critical error
-        if (validationError.includes('critical:')) {
-          e.target.value = '';
-          setFile(null);
-        }
       }
     }
   };
@@ -43,11 +38,6 @@ const FileUploader = ({ onUploadSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!file) {
-      setError("critical:Please select a JSON file");
-      return;
-    }
-
     // Validate file again before upload
     const validationError = validateJsonFile(file);
     if (validationError) {
@@ -82,9 +72,9 @@ const FileUploader = ({ onUploadSuccess }) => {
       // Extract error message from response if available
       let errorMessage = 'Failed to upload file. Please try again.';
       if (err.response && err.response.data && err.response.data.message) {
-        errorMessage = `critical:${err.response.data.message}`;
+        errorMessage = `Error: ${err.response.data.message}`;
       } else if (err.message) {
-        errorMessage = `critical:${err.message}`;
+        errorMessage = `Error: ${err.message}`;
       }
       
       setError(errorMessage);
@@ -112,27 +102,15 @@ const FileUploader = ({ onUploadSuccess }) => {
           )}
         </div>
         
-        {error && error.includes('critical:') && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-            <p>{error.replace('critical:', '')}</p>
-            <button 
-              className="text-red-700 font-bold ml-2"
-              onClick={() => setError(null)}
-            >
-              ×
-            </button>
+        {error && (
+          <div className="mb-4 p-2 bg-red-50 border-l-4 border-red-500 text-red-700">
+            <p className="text-sm">{error}</p>
           </div>
         )}
         
         {success && (
-          <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
-            <p>{success}</p>
-            <button 
-              className="text-green-700 font-bold ml-2"
-              onClick={() => setSuccess(null)}
-            >
-              ×
-            </button>
+          <div className="mb-4 p-2 bg-green-50 border-l-4 border-green-500 text-green-700">
+            <p className="text-sm">{success}</p>
           </div>
         )}
         

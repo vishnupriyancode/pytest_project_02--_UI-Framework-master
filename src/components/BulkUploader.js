@@ -14,11 +14,7 @@ const BulkUploader = ({ onUploadSuccess }) => {
     setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
     
     if (selectedFiles.length < e.target.files.length) {
-      console.warn('Some non-JSON files were excluded');
-      // Only show error if no valid files were selected
-      if (selectedFiles.length === 0) {
-        setError('critical:Please select only JSON files');
-      }
+      setError('Only JSON files are accepted. Some non-JSON files were excluded.');
     } else {
       setError(null);
     }
@@ -54,7 +50,7 @@ const BulkUploader = ({ onUploadSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (files.length === 0) {
-      setError('critical:Please select at least one JSON file');
+      setError('Please select at least one JSON file');
       return;
     }
 
@@ -114,14 +110,14 @@ const BulkUploader = ({ onUploadSuccess }) => {
       setLoading(false);
       
       // Display a user-friendly error message
-      let displayError = 'critical:Failed to upload files. Please try again.';
+      let displayError = 'Failed to upload files. Please try again.';
       
       if (err.name === 'AbortError') {
-        displayError = 'critical:Upload timed out. The server took too long to respond.';
+        displayError = 'Upload timed out. The server took too long to respond.';
       } else if (err.message && err.message.includes('API server is not accessible')) {
-        displayError = 'critical:Cannot connect to the API server. Please ensure it is running.';
+        displayError = 'Cannot connect to the API server. Please ensure it is running.';
       } else if (err.message) {
-        displayError = `critical:${err.message}`;
+        displayError = `Upload failed: ${err.message}`;
       }
       
       setError(displayError);
@@ -221,22 +217,16 @@ const BulkUploader = ({ onUploadSuccess }) => {
         </div>
         
         {/* Error message */}
-        {error && error.includes('critical:') && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-            <p>{error.replace('critical:', '')}</p>
-            <button 
-              className="text-red-700 font-bold ml-2"
-              onClick={() => setError(null)}
-            >
-              ×
-            </button>
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
+            <p className="text-sm">{error}</p>
           </div>
         )}
         
         {/* Success status */}
         {uploadStatus && !error && (
-          <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4">
-            <p>{uploadStatus}</p>
+          <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-500 text-green-700 rounded">
+            <p className="text-sm">{uploadStatus}</p>
           </div>
         )}
         

@@ -12,11 +12,9 @@ const NetworkStatusIndicator = () => {
   const [lastChecked, setLastChecked] = useState(null);
   const [errorDetails, setErrorDetails] = useState(null);
   const [serverStatus, setServerStatus] = useState('unknown'); // 'online', 'offline', 'unknown'
-  const [showToast, setShowToast] = useState(false);
   const timeoutRef = useRef(null);
   const intervalRef = useRef(null);
   const retryCountRef = useRef(0);
-  const dismissTimerRef = useRef(null);
   
   // Safely check network status on component mount
   useEffect(() => {
@@ -32,7 +30,6 @@ const NetworkStatusIndicator = () => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (intervalRef.current) clearInterval(intervalRef.current);
-      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     };
   }, []);
   
@@ -52,8 +49,7 @@ const NetworkStatusIndicator = () => {
       
       if (!serverCheck.success) {
         setStatus('disconnected');
-        setErrorDetails('Server is not reachable');
-        setShowToast(true);
+        setErrorDetails('Server is not reachable. Please check if the server is running.');
         handleRetry();
         return;
       }
@@ -65,29 +61,18 @@ const NetworkStatusIndicator = () => {
         setStatus('connected');
         setErrorDetails(null);
         retryCountRef.current = 0; // Reset retry count on successful connection
-        setShowToast(false);
       } else {
         setStatus('disconnected');
         setErrorDetails(result.error || 'API server unreachable');
-        setShowToast(true);
         handleRetry();
       }
     } catch (error) {
       console.error('Status check error:', error);
       setStatus('disconnected');
       setErrorDetails(error.message || 'Unknown error');
-      setShowToast(true);
       handleRetry();
     } finally {
       setLastChecked(new Date());
-      
-      // Auto-dismiss toast after 5 seconds if it's not a critical error
-      if (status !== 'disconnected' && showToast) {
-        if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-        dismissTimerRef.current = setTimeout(() => {
-          setShowToast(false);
-        }, 5000);
-      }
     }
   };
   
@@ -105,11 +90,6 @@ const NetworkStatusIndicator = () => {
         checkStatus();
       }, delay);
     }
-  };
-  
-  const handleManualRetry = () => {
-    retryCountRef.current = 0;
-    checkStatus();
   };
   
   const getStatusColor = () => {
@@ -146,61 +126,12 @@ const NetworkStatusIndicator = () => {
     return lastChecked.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
-  if (!showToast) return null;
-  
   return (
-    <div className="fixed top-4 right-4 z-50 animate-fade-in">
-      <div className={`
-        flex items-center gap-2 px-3 py-2 rounded-lg shadow-lg
-        ${status === 'disconnected' ? 'bg-red-50' : 'bg-gray-50'}
-        border-l-4 ${status === 'disconnected' ? 'border-red-500' : 'border-gray-500'}
-        max-w-sm w-full
-      `}>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${
-              status === 'checking' ? 'bg-blue-500 animate-pulse' :
-              status === 'connected' ? 'bg-green-500' :
-              'bg-red-500'
-            }`} />
-            <h3 className={`font-medium text-sm truncate ${
-              status === 'disconnected' ? 'text-red-800' : 'text-gray-800'
-            }`}>
-              {status === 'checking' ? 'Checking API Connection...' :
-               status === 'connected' ? 'API Connected' :
-               'API Connection Lost'}
-            </h3>
-          </div>
-          {errorDetails && (
-            <p className="mt-0.5 text-xs text-gray-600 truncate">
-              {errorDetails}
-            </p>
-          )}
-          <p className="mt-0.5 text-xs text-gray-500">
-            Last checked: {getFormattedTime()}
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {status === 'disconnected' && (
-            <button
-              onClick={handleManualRetry}
-              className="px-2 py-1 text-xs font-medium text-red-700 bg-red-100 
-                       rounded hover:bg-red-200 focus:outline-none focus:ring-2 
-                       focus:ring-red-500 focus:ring-offset-1"
-            >
-              Retry
-            </button>
-          )}
-          <button
-            onClick={() => setShowToast(false)}
-            className="text-gray-400 hover:text-gray-600 p-0.5"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <div className="fixed bottom-4 right-4 z-50">
+      <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg shadow-lg ${getStatusColor()} text-white`}>
+        <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+        <span className="text-sm font-medium">{getStatusText()}</span>
+        <span className="text-xs opacity-75">Last checked: {getFormattedTime()}</span>
       </div>
     </div>
   );

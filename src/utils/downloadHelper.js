@@ -90,13 +90,25 @@ export const detectBrowser = () => {
   return "Unknown";
 };
 
+// Global configuration for toast notifications
+let toastConfig = {
+  enabled: true,
+  duration: 3000
+};
+
+export const configureToasts = (config) => {
+  toastConfig = { ...toastConfig, ...config };
+};
+
 /**
  * Create a toast notification
  * @param {string} message - Message to display
  * @param {'success'|'error'|'info'} type - Type of toast
  * @param {number} duration - Duration in ms
  */
-export const createToast = (message, type = 'info', duration = 3000) => {
+export const createToast = (message, type = 'info', duration = toastConfig.duration) => {
+  if (!toastConfig.enabled) return null;
+  
   const toast = document.createElement('div');
   
   // Add styles based on type
