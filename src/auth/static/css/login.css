@@ -1,0 +1,125 @@
+/* Custom styles for login form */
+.form-input-focus {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    outline: none;
+    border-color: #3b82f6;
+}
+
+/* Glass morphism effect */
+.glass-effect {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-effect:hover {
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Custom animation for loading spinner */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Enhance password toggle button interaction */
+#togglePassword:hover {
+    color: #4b5563;
+}
+
+#togglePassword:focus {
+    outline: none;
+    color: #4b5563;
+}
+
+/* Error message animation */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.text-red-600:not(.hidden) {
+    animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Custom focus styles for remember me checkbox */
+input[type="checkbox"]:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Smooth transitions */
+.form-input,
+.form-checkbox,
+button {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Input field enhancements */
+input[type="email"],
+input[type="password"] {
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* Mobile responsiveness enhancements */
+@media (max-width: 640px) {
+    .w-96 {
+        width: 90%;
+        max-width: 24rem;
+    }
+    
+    .p-8 {
+        padding: 1.5rem;
+    }
+
+    .login-bg {
+        background-position: center center;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .glass-effect {
+        background: rgba(17, 24, 39, 0.8);
+    }
+
+    .text-gray-700,
+    .text-gray-800 {
+        color: #e5e5e5;
+    }
+
+    .text-gray-600 {
+        color: #d1d1d1;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    input[type="email"]::placeholder,
+    input[type="password"]::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .bg-red-100 {
+        background-color: rgba(220, 38, 38, 0.2);
+    }
+
+    .text-red-700 {
+        color: #ef4444;
+    }
+} 

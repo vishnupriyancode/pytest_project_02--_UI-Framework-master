@@ -21,4 +21,4 @@ LOG_LEVEL = logging.INFO
 
 # API configuration
 API_PORT = 5000
-API_HOST = '0.0.0.0' 
+API_HOST = '0.0.0.0'

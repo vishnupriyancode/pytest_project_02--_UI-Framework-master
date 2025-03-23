@@ -6,6 +6,7 @@
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@tanstack/react-table": "^8.10.7",
+    "api-test-ui": "file:",
     "axios": "^1.6.2",
     "express": "^4.21.2",
     "fs": "^0.0.1-security",
