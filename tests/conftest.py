@@ -1,3 +1,6 @@
+"""
+Pytest configuration file with shared fixtures and settings.
+"""
 import os
 import sys
 import pytest
@@ -5,6 +8,8 @@ import tempfile
 import json
 import shutil
 from pathlib import Path
+import logging
+from config import setup_logging
 
 # Add the parent directory to sys.path
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,6 +21,14 @@ from src.api_service import ApiService
 from src.api_client import ApiClient
 from src.excel_reporter import ExcelReporter
 from src.workflow import JsonProcessingWorkflow
+
+# Add src directory to Python path
+src_path = Path(__file__).parent.parent / 'src'
+sys.path.append(str(src_path))
+
+# Setup logging for tests
+loggers = setup_logging()
+logger = logging.getLogger('tests')
 
 @pytest.fixture
 def temp_json_dir():
@@ -86,25 +99,34 @@ def api_client():
     """Create an ApiClient instance for testing."""
     return ApiClient()
 
-@pytest.fixture
+@pytest.fixture(scope="session")
+def test_data_dir():
+    """Fixture to provide the test data directory path."""
+    return Path(__file__).parent / 'test_data'
+
+@pytest.fixture(scope="session")
+def sample_json_file(test_data_dir):
+    """Fixture to provide a sample JSON file for testing."""
+    return test_data_dir / 'sample.json'
+
+@pytest.fixture(scope="session")
 def mock_api_response():
-    """Return a mock API response."""
+    """Fixture to provide a mock API response."""
     return {
         "status": "success",
-        "message": "Edit is working properly",
-        "processed_data": {
-            "id": 1,
-            "name": "Test Data 1",
-            "description": "This is a test JSON file",
-            "properties": {
-                "value": 42,
-                "active": True,
-                "tags": ["test", "sample", "json"],
-                "processed": True
-            },
-            "edited": True,
-            "edit_version": "Edit 1"
-        },
-        "file_path": "test1.json",
-        "operation": "process_data"
+        "data": {"message": "Test response"}
     }
+
+@pytest.fixture(scope="function")
+def temp_upload_dir(tmp_path):
+    """Fixture to provide a temporary upload directory."""
+    upload_dir = tmp_path / 'uploads'
+    upload_dir.mkdir()
+    return upload_dir
+
+@pytest.fixture(scope="function")
+def temp_output_dir(tmp_path):
+    """Fixture to provide a temporary output directory."""
+    output_dir = tmp_path / 'output'
+    output_dir.mkdir()
+    return output_dir
