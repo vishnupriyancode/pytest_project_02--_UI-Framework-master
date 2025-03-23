@@ -1,0 +1,43 @@
+Title: Automate Case Creation from QA_BRD_Business Requirements Document
+Description:
+
+Develop an AI-powered feature on the Case Creation page (http://localhost:3001/case-creation) that allows users to upload a QA_BRD_Business Requirements Document.doc, analyze it using AI, generate possible test cases, and provide a downloadable format.
+Feature Requirements:
+
+    File Upload
+
+        Provide a UI element for users to upload a document (QA_BRD_Business Requirements Document.doc).
+
+        Accept only .doc files.
+
+    AI Analysis Button
+
+        Add an "Analyze" button that triggers AI processing upon file upload.
+
+        AI should extract requirements and understand functionality.
+
+    Test Case Generation (AI-Powered)
+
+        AI should analyze the uploaded document and automatically generate test cases.
+
+        Format:
+
+        Test Case ID | Test Scenario | Test Steps | Expected Result | Status
+
+        AI should create all possible positive, negative, boundary, and edge cases.
+
+        Display generated test cases in a table for user review.
+
+    Download Test Cases
+
+        Provide a Download button to export the AI-generated test cases in a structured document (e.g., .doc or .xlsx).
+
+UI/UX Requirements:
+
+    Clean and intuitive design with a drag-and-drop file uploader.
+
+    Loading animation while AI processes the document.
+
+    Responsive table to display generated test cases.
+
+    Download button for exporting results.

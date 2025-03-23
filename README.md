@@ -164,4 +164,45 @@ The application uses a comprehensive logging system:
 ## Output Files
 
 - `responses.xlsx`: Contains responses recorded by the API
-- `processing_results.xlsx`: Contains results of the batch processing script 
+- `processing_results.xlsx`: Contains results of the batch processing script
+
+# Project Name
+
+This project is containerized using Docker. Follow the instructions below to run the project.
+
+## Prerequisites
+
+- Docker installed on your machine
+- Docker Compose installed on your machine
+
+## Running the Project
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd <project-directory>
+   ```
+
+2. Build the Docker image:
+   ```bash
+   docker-compose build
+   ```
+
+3. Start the Docker container:
+   ```bash
+   docker-compose up
+   ```
+
+4. Open your browser and navigate to `http://localhost:3000` to view the project.
+
+## Stopping the Project
+
+To stop the running container, press `Ctrl+C` in the terminal where the container is running, or run:
+```bash
+docker-compose down
+```
+
+## Additional Information
+
+- The project runs on port 3000.
+- Any changes made to the project files will be reflected in the container due to the volume mapping in docker-compose.yml. 
